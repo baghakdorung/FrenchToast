@@ -44,6 +44,11 @@ class General(commands.Cog):
             ),
             inline=False,
         )
+        embed.add_field(
+            name="📝 메시지 로그 (서버 관리 권한 필요)",
+            value=f"`{p}로그설정 #채널` · `{p}로그끄기`\n모든 채널의 메시지 작성·수정·삭제를 기록해요.",
+            inline=False,
+        )
         embed.add_field(name="기타", value=f"`{p}핑` · `{p}도움`", inline=False)
         if self.bot.user:
             embed.set_thumbnail(url=self.bot.user.display_avatar.url)

@@ -35,6 +35,7 @@ class FrenchToast(commands.Bot):
             intents=intents,
             help_command=None,
             case_insensitive=True,
+            max_messages=5000,  # 수정/삭제 로그용 메시지 캐시
             activity=discord.Game(name=f"{PREFIX}도움"),
         )
         self.storage = create_storage()
@@ -43,7 +44,7 @@ class FrenchToast(commands.Bot):
 
     async def setup_hook(self) -> None:
         self._web_runner = await start_web_server(self)
-        for ext in ("cogs.welcome", "cogs.gif", "cogs.general", "cogs.moderation"):
+        for ext in ("cogs.welcome", "cogs.gif", "cogs.general", "cogs.moderation", "cogs.logging_cog"):
             await self.load_extension(ext)
             log.info("확장 로드: %s", ext)
 
