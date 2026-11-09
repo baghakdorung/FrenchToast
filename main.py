@@ -44,7 +44,7 @@ class FrenchToast(commands.Bot):
 
     async def setup_hook(self) -> None:
         self._web_runner = await start_web_server(self)
-        for ext in ("cogs.welcome", "cogs.gif", "cogs.general", "cogs.moderation", "cogs.logging_cog"):
+        for ext in ("cogs.welcome", "cogs.gif", "cogs.general", "cogs.moderation", "cogs.logging_cog", "cogs.hanyeong"):
             await self.load_extension(ext)
             log.info("확장 로드: %s", ext)
 
