@@ -1,7 +1,7 @@
 """+안드로어 / +역안드로어 : 한/영 자판 변환 (두벌식).
 
-+안드로어 안녕   → dkssud   (한글을 영문 자판 입력으로)
-+역안드로어 dkssud → 안녕   (영문 자판 입력을 한글로)
++안드로어 dkssud → 안녕   (영문 자판 입력을 한글로)
++역안드로어 안녕 → dkssud   (한글을 영문 자판 입력으로)
 메시지에 답장하면서 명령어만 쓰면 그 메시지를 변환합니다.
 """
 
@@ -138,22 +138,22 @@ class HanYeong(commands.Cog):
         )
 
     @commands.command(name="안드로어", aliases=["안"])
-    async def to_english(self, ctx: commands.Context, *, text: str = ""):
-        """+안드로어 안녕 → dkssud"""
-        src = await self._source_text(ctx, text)
-        if not src:
-            await ctx.reply("사용법: `+안드로어 안녕` → `dkssud` (메시지에 답장하며 `+안드로어` 도 가능)", mention_author=False)
-            return
-        await self._reply(ctx, ko_to_en(src))
-
-    @commands.command(name="역안드로어", aliases=["역안"])
     async def to_korean(self, ctx: commands.Context, *, text: str = ""):
-        """+역안드로어 dkssud → 안녕"""
+        """+안드로어 dkssud → 안녕"""
         src = await self._source_text(ctx, text)
         if not src:
-            await ctx.reply("사용법: `+역안드로어 dkssud` → `안녕` (메시지에 답장하며 `+역안드로어` 도 가능)", mention_author=False)
+            await ctx.reply("사용법: `+안드로어 dkssud` → `안녕` (메시지에 답장하며 `+안드로어` 도 가능)", mention_author=False)
             return
         await self._reply(ctx, en_to_ko(src))
+
+    @commands.command(name="역안드로어", aliases=["역안"])
+    async def to_english(self, ctx: commands.Context, *, text: str = ""):
+        """+역안드로어 안녕 → dkssud"""
+        src = await self._source_text(ctx, text)
+        if not src:
+            await ctx.reply("사용법: `+역안드로어 안녕` → `dkssud` (메시지에 답장하며 `+역안드로어` 도 가능)", mention_author=False)
+            return
+        await self._reply(ctx, ko_to_en(src))
 
 
 async def setup(bot: commands.Bot) -> None:

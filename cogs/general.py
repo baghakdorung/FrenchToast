@@ -51,7 +51,7 @@ class General(commands.Cog):
         )
         embed.add_field(
             name="⌨️ 한/영 변환",
-            value=f"`{p}안드로어 안녕` → dkssud (`{p}안`) · `{p}역안드로어 dkssud` → 안녕 (`{p}역안`)\n메시지에 답장하며 쓰면 그 메시지를 변환해요.",
+            value=f"`{p}안드로어 dkssud` → 안녕 (`{p}안`) · `{p}역안드로어 안녕` → dkssud (`{p}역안`)\n메시지에 답장하며 쓰면 그 메시지를 변환해요.",
             inline=False,
         )
         embed.add_field(name="기타", value=f"`{p}핑` · `{p}도움`", inline=False)
