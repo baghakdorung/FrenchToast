@@ -55,7 +55,7 @@ class MongoStorage(GuildStorage):
     def __init__(self, uri: str, db_name: str = "frenchtoast") -> None:
         from motor.motor_asyncio import AsyncIOMotorClient
 
-        self._client = AsyncIOMotorClient(uri)
+        self._client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=8000)
         self._col = self._client[db_name]["guilds"]
 
     async def get(self, guild_id: int) -> dict[str, Any]:

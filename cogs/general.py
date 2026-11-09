@@ -10,11 +10,11 @@ class General(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(name="도움말", aliases=["help", "명령어"])
+    @commands.command(name="도움", aliases=["help"])
     async def help(self, ctx: commands.Context):
         p = self.bot.command_prefix
         embed = discord.Embed(
-            title="🍞 FrenchToast 도움말",
+            title="🍞 FrenchToast 도움",
             description=f"접두사: `{p}`",
             color=self.bot.embed_color,
         )
@@ -36,7 +36,15 @@ class General(commands.Cog):
             ),
             inline=False,
         )
-        embed.add_field(name="기타", value=f"`{p}핑` · `{p}도움말`", inline=False)
+        embed.add_field(
+            name="⏱️ 타임아웃 (멤버 타임아웃 권한 필요)",
+            value=(
+                f"`{p}타임아웃 @유저 <시간> [사유]` · `{p}타임아웃해제 @유저 [사유]`\n"
+                "시간: `30초` `10분` `2시간` `3일` `1시간30분` (최대 28일), 끝나면 자동으로 풀려요."
+            ),
+            inline=False,
+        )
+        embed.add_field(name="기타", value=f"`{p}핑` · `{p}도움`", inline=False)
         if self.bot.user:
             embed.set_thumbnail(url=self.bot.user.display_avatar.url)
         await ctx.reply(embed=embed, mention_author=False)

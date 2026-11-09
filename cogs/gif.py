@@ -174,10 +174,9 @@ class Gif(commands.Cog):
 
         author = ctx.author
         embed = discord.Embed(description=caption or None, color=self.bot.embed_color)
-        embed.set_author(name=author.display_name, icon_url=author.display_avatar.url)
         embed.set_image(url="attachment://frenchtoast.gif")
-        embed.set_footer(text=f"{frame_count}프레임 · {len(gif_bytes) / 1024:.0f}KB · 요청: {author.name}")
-        embed.timestamp = discord.utils.utcnow()
+        # 푸터는 이미지 아래에 표시됨 → 프로필 사진 + 닉네임
+        embed.set_footer(text=author.display_name, icon_url=author.display_avatar.url)
 
         file = discord.File(io.BytesIO(gif_bytes), filename="frenchtoast.gif")
         await ctx.send(embed=embed, file=file)

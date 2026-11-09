@@ -35,7 +35,7 @@ class FrenchToast(commands.Bot):
             intents=intents,
             help_command=None,
             case_insensitive=True,
-            activity=discord.Game(name=f"{PREFIX}도움말"),
+            activity=discord.Game(name=f"{PREFIX}도움"),
         )
         self.storage = create_storage()
         self.embed_color = EMBED_COLOR
@@ -43,7 +43,7 @@ class FrenchToast(commands.Bot):
 
     async def setup_hook(self) -> None:
         self._web_runner = await start_web_server(self)
-        for ext in ("cogs.welcome", "cogs.gif", "cogs.general"):
+        for ext in ("cogs.welcome", "cogs.gif", "cogs.general", "cogs.moderation"):
             await self.load_extension(ext)
             log.info("확장 로드: %s", ext)
 
@@ -55,15 +55,26 @@ class FrenchToast(commands.Bot):
         if isinstance(error, commands.CommandNotFound):
             return
         if isinstance(error, commands.MissingPermissions):
-            msg = "❌ 이 명령어는 **서버 관리** 권한이 있는 관리자만 쓸 수 있어요."
+            perms = ", ".join(error.missing_permissions)
+            msg = f"❌ 이 명령어를 쓸 권한이 없어요. (필요 권한: `{perms}`)"
+        elif isinstance(error, commands.BotMissingPermissions):
+            perms = ", ".join(error.missing_permissions)
+            msg = f"❌ 봇에게 권한이 없어요. (필요 권한: `{perms}`)"
+        elif isinstance(error, commands.MemberNotFound):
+            msg = "❌ 해당 멤버를 찾을 수 없어요."
+        elif isinstance(error, discord.Forbidden):
+            msg = "❌ 봇 권한이 부족해 처리할 수 없어요. 봇 역할 순서와 권한을 확인해 주세요."
         elif isinstance(error, commands.NoPrivateMessage):
             msg = "❌ 이 명령어는 서버에서만 쓸 수 있어요."
         elif isinstance(error, commands.MissingRequiredArgument):
-            msg = f"❌ 빠진 값이 있어요: `{error.param.name}`\n`{PREFIX}도움말` 로 사용법을 확인하세요."
+            msg = f"❌ 빠진 값이 있어요: `{error.param.name}`\n`{PREFIX}도움` 으로 사용법을 확인하세요."
         elif isinstance(error, (commands.ChannelNotFound, commands.BadArgument)):
             msg = f"❌ 입력값이 올바르지 않아요: {error}"
         elif isinstance(error, commands.CommandOnCooldown):
             msg = f"⏳ 잠시 후 다시 시도해 주세요. ({error.retry_after:.1f}초)"
+        elif type(error).__module__.startswith("pymongo"):
+            log.error("DB 오류: %s", error)
+            msg = "⚠️ 설정 저장소(MongoDB)에 연결하지 못했어요. 봇 관리자는 `MONGODB_URI` 를 확인해 주세요."
         else:
             log.exception("명령어 오류: %s", ctx.message.content, exc_info=error)
             msg = "⚠️ 처리 중 오류가 발생했어요."

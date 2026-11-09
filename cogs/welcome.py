@@ -38,15 +38,6 @@ class Welcome(commands.Cog):
 
     # ---------- 내부 헬퍼 ----------
 
-    def _build_embed(self, kind: str, member: discord.Member, message: str) -> discord.Embed:
-        color = discord.Color.green() if kind == "welcome" else discord.Color.red()
-        embed = discord.Embed(description=message, color=color)
-        embed.set_author(name=f"{member.display_name} ({member.name})", icon_url=member.display_avatar.url)
-        embed.set_thumbnail(url=member.display_avatar.url)
-        embed.set_footer(text=f"{KIND_LABEL[kind]} · {member.guild.name}")
-        embed.timestamp = discord.utils.utcnow()
-        return embed
-
     async def _send(self, kind: str, member: discord.Member) -> bool:
         conf = await self.bot.storage.get(member.guild.id)
         channel_id = conf.get(f"{kind}_channel")
@@ -58,8 +49,7 @@ class Welcome(commands.Cog):
         text = render(conf.get(f"{kind}_message") or DEFAULTS[kind], member)
         try:
             await channel.send(
-                content=member.mention if kind == "welcome" else None,
-                embed=self._build_embed(kind, member, text),
+                text[:2000],
                 allowed_mentions=discord.AllowedMentions(users=True, everyone=False, roles=False),
             )
             return True
@@ -70,8 +60,8 @@ class Welcome(commands.Cog):
         self, ctx: commands.Context, kind: str, channel: discord.TextChannel, message: str | None
     ) -> None:
         perms = channel.permissions_for(ctx.guild.me)
-        if not (perms.send_messages and perms.embed_links):
-            await ctx.reply(f"❌ {channel.mention} 채널에 메시지/임베드를 보낼 권한이 없어요.", mention_author=False)
+        if not perms.send_messages:
+            await ctx.reply(f"❌ {channel.mention} 채널에 메시지를 보낼 권한이 없어요.", mention_author=False)
             return
         fields = {f"{kind}_channel": channel.id}
         if message:
