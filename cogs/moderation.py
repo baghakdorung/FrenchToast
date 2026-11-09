@@ -72,7 +72,7 @@ class Moderation(commands.Cog):
             return "봇 역할이 대상보다 낮아요. 서버 설정에서 봇 역할을 더 위로 올려주세요."
         return None
 
-    @commands.command(name="타임아웃", aliases=["timeout", "뮤트"])
+    @commands.command(name="타임아웃", aliases=["탐아", "timeout", "뮤트"])
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_guild_permissions(moderate_members=True)
@@ -99,7 +99,7 @@ class Moderation(commands.Cog):
             msg += f"\n사유: {reason}"
         await ctx.reply(msg, mention_author=False, allowed_mentions=discord.AllowedMentions(users=False))
 
-    @commands.command(name="타임아웃해제", aliases=["untimeout", "언뮤트"])
+    @commands.command(name="타임아웃해제", aliases=["탐아해제", "untimeout", "언뮤트"])
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_guild_permissions(moderate_members=True)
