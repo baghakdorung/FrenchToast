@@ -54,9 +54,51 @@ class DurationConverter(commands.Converter):
         return td
 
 
+USAGE = "사용법: `+탐아 @유저 10분 [사유]` (닉네임에 띄어쓰기가 있어도 돼요: `+탐아 ts pig 47초`)"
+
+
+async def resolve_member(ctx: commands.Context, text: str) -> discord.Member | None:
+    """멘션/ID/이름/닉네임(띄어쓰기 포함, 대소문자 무시)으로 멤버 찾기."""
+    text = text.strip().strip('"').strip()
+    if not text:
+        return None
+    try:
+        return await commands.MemberConverter().convert(ctx, text)
+    except commands.BadArgument:
+        pass
+    low = text.lower()
+    matches = [
+        m for m in ctx.guild.members
+        if low in {(m.nick or "").lower(), (m.global_name or "").lower(), m.name.lower(), m.display_name.lower()}
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
 class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    async def _parse_timeout_args(
+        self, ctx: commands.Context, args: str
+    ) -> tuple[discord.Member, timedelta, str | None]:
+        """'<멤버(띄어쓰기 가능)> <시간> [사유]' 해석. 시간처럼 보이는 첫 위치에서 멤버를 찾는다."""
+        tokens = args.split()
+        for i in range(1, len(tokens)):
+            if parse_duration(tokens[i]) is None:
+                continue
+            member = await resolve_member(ctx, " ".join(tokens[:i]))
+            if member is None:
+                continue
+            j = i
+            while j < len(tokens) and parse_duration(tokens[j]) is not None:
+                j += 1  # '1시간 30분' 처럼 띄어 쓴 시간도 합침
+            duration = parse_duration("".join(tokens[i:j]))
+            if duration > MAX_TIMEOUT:
+                raise commands.BadArgument("타임아웃은 최대 28일까지 가능해요.")
+            return member, duration, " ".join(tokens[j:]) or None
+        if not any(parse_duration(t) for t in tokens[1:]):
+            raise commands.BadArgument(f"시간을 찾지 못했어요. `30초` `10분` `2시간` `3일` 처럼 입력해 주세요.\n{USAGE}")
+        raise commands.BadArgument(f"해당 멤버를 찾을 수 없어요. 멘션(@)으로 지정하면 가장 정확해요.\n{USAGE}")
 
     def _check_target(self, ctx: commands.Context, member: discord.Member) -> str | None:
         me = ctx.guild.me
@@ -76,15 +118,9 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_guild_permissions(moderate_members=True)
-    async def timeout(
-        self,
-        ctx: commands.Context,
-        member: discord.Member,
-        duration: DurationConverter,
-        *,
-        reason: str | None = None,
-    ):
+    async def timeout(self, ctx: commands.Context, *, args: str = ""):
         """+타임아웃 @유저 10분 [사유]"""
+        member, duration, reason = await self._parse_timeout_args(ctx, args)
         if err := self._check_target(ctx, member):
             await ctx.reply(f"❌ {err}", mention_author=False)
             return
@@ -103,8 +139,17 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_guild_permissions(moderate_members=True)
-    async def untimeout(self, ctx: commands.Context, member: discord.Member, *, reason: str | None = None):
+    async def untimeout(self, ctx: commands.Context, *, args: str = ""):
         """+타임아웃해제 @유저 [사유]"""
+        tokens = args.split()
+        member, reason = None, None
+        for i in range(len(tokens), 0, -1):  # 가장 긴 이름부터 시도, 나머지는 사유
+            member = await resolve_member(ctx, " ".join(tokens[:i]))
+            if member:
+                reason = " ".join(tokens[i:]) or None
+                break
+        if member is None:
+            raise commands.BadArgument("해당 멤버를 찾을 수 없어요. 사용법: `+탐아해제 @유저` 또는 `+탐아해제 닉네임`")
         if not member.is_timed_out():
             await ctx.reply(f"ℹ️ {member.display_name}님은 타임아웃 상태가 아니에요.", mention_author=False)
             return
